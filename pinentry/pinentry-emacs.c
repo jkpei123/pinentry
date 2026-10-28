@@ -352,10 +352,12 @@ read_from_emacs (int s, int timeout, char *buffer, size_t capacity)
 	}
       /* If we receive a signal (e.g. SIGWINCH, which we pass
 	 through to Emacs), on some OSes we get EINTR and must retry. */
-      while (rl < 0 && errno == EINTR);
+      while (rl < 0 && errno == EINTR && !timed_out);
 
       if (rl < 0)
 	{
+	  if (timed_out)
+	    return gpg_error (GPG_ERR_TIMEOUT);
 	  perror ("recv");
 	  return gpg_error (GPG_ERR_ASS_GENERAL);;
 	}
